@@ -5,10 +5,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
 import morgan from 'morgan';
 import connectDB from './config/db.js';
+import authRouter from './routes/authRoute.js';
 
 // Load env variables (only in development)
 if (process.env.NODE_ENV !== 'production') {
@@ -32,8 +31,8 @@ app.use(cookieParser());
 
 // Security Middleware
 app.use(helmet());
-app.use(mongoSanitize());
-app.use(xss());
+
+
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -52,6 +51,9 @@ if (process.env.NODE_ENV === 'development') {
 app.get('/api/status', (req, res) => {
     return res.status(200).json({ success: true, message: 'Server is Live' });
 });
+
+// app routes
+app.use("/api/auth", authRouter)
 
 // Global Error Handler
 app.use((err, req, res, next) => {
