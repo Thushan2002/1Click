@@ -62,3 +62,42 @@ export const signUp = async (req, res) => {
         return res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 };
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body
+        const user = await User.findOne({ email })
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No User found" })
+        }
+        const isPasswordMatched = await bcrypt.compare(password, user.password)
+        if (!isPasswordMatched) {
+            return res.status(401).json({ success: false, message: "Password Mismatched" })
+        }
+        generateToken(user._id, res)
+        return res.status(201).json({
+            success: true,
+            message: "Login successfull",
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                profilePic: user.profilePic
+            }
+        });
+
+    } catch (error) {
+        console.error(`Error in Login Controller: ${error}`);
+        return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+}
+
+export const authUser = async (req, res) => {
+    try {
+        const authUser = req.user
+        return res.status(200).json({ success: true, authUser })
+    } catch (error) {
+        console.error(`Error in authUser Controller: ${error}`);
+        return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+}
